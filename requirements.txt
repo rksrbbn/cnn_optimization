@@ -8,7 +8,7 @@ streamlit>=1.40.0
 
 # Image Processing
 Pillow>=10.0.0
-opencv-python>=4.10.0
+# opencv-python>=4.10.0
 
 # Data Processing
 numpy>=1.26.0

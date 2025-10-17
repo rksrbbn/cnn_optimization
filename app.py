@@ -3,7 +3,6 @@ import tensorflow as tf
 import numpy as np
 from PIL import Image
 import json
-import cv2
 import plotly.graph_objects as go
 
 # ==================== KONFIGURASI ====================
@@ -53,20 +52,15 @@ def load_model():
 
 # ==================== PREPROCESSING ====================
 def preprocess_image(image, target_size=(224, 224)):
-    """Melakukan praproses gambar untuk prediksi."""
-    img = image.resize(target_size)
-    img_array = np.array(img)
-
-    # Konversi ke RGB jika diperlukan
-    if len(img_array.shape) == 2:
-        img_array = cv2.cvtColor(img_array, cv2.COLOR_GRAY2RGB)
-    elif img_array.shape[2] == 4:
-        img_array = cv2.cvtColor(img_array, cv2.COLOR_RGBA2RGB)
-
-    # Normalisasi
-    img_array = img_array / 255.0
+    # Pastikan RGB
+    if image.mode != 'RGB':
+        image = image.convert('RGB')
+    # Resize & normalisasi
+    img = image.resize(target_size, Image.LANCZOS)
+    img_array = np.asarray(img, dtype=np.float32) / 255.0
     img_array = np.expand_dims(img_array, axis=0)
     return img_array
+
 
 # ==================== PREDIKSI ====================
 def predict_image(model, image, class_labels):
