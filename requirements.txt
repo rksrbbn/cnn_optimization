@@ -1,0 +1,25 @@
+# Deep Learning Framework
+tensorflow==2.15.0
+keras==2.15.0
+
+# Web Framework
+streamlit==1.29.0
+
+# Image Processing
+Pillow==10.1.0
+opencv-python==4.8.1.78
+
+# Data Processing
+numpy==1.24.3
+pandas==2.1.4
+
+# Visualization
+matplotlib==3.8.2
+seaborn==0.13.0
+plotly==5.18.0
+
+# Machine Learning Utilities
+scikit-learn==1.3.2
+
+# Others
+python-multipart==0.0.6
