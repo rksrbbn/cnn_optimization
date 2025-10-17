@@ -2,6 +2,8 @@
 
 Klasifikasi gambar menggunakan **Convolutional Neural Network (CNN)** berbasis **Transfer Learning (MobileNetV2)** dan aplikasi web interaktif dengan **Streamlit** untuk tugas Artificial Intelligence.
 
+Streamlit Web App link: https://cnnoptimization-group-5.streamlit.app/
+
 ---
 
 ## [ Instalasi ]
