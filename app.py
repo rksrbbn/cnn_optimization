@@ -8,8 +8,8 @@ import plotly.graph_objects as go
 
 # ==================== KONFIGURASI ====================
 st.set_page_config(
-    page_title="CNN Image Classifier",
-    page_icon="🖼️",
+    page_title="Optimized CNN - Group 5",
+    page_icon=None,
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -41,73 +41,55 @@ st.markdown("""
 # ==================== LOAD MODEL ====================
 @st.cache_resource
 def load_model():
-    """Load trained model dan class labels"""
+    """Memuat model terlatih dan label kelas."""
     try:
-        model = tf.keras.models.load_model('optimized_cnn_model.h5')
-        
-        with open('class_labels.json', 'r') as f:
+        model = tf.keras.models.load_model('outputs/optimized_cnn_model.h5')
+        with open('outputs/class_labels.json', 'r') as f:
             class_labels = json.load(f)
-        
         return model, class_labels
     except Exception as e:
-        st.error(f"Error loading model: {str(e)}")
+        st.error(f"Terjadi kesalahan saat memuat model: {str(e)}")
         return None, None
 
 # ==================== PREPROCESSING ====================
 def preprocess_image(image, target_size=(224, 224)):
-    """Preprocess image untuk prediksi"""
-    # Resize image
+    """Melakukan praproses gambar untuk prediksi."""
     img = image.resize(target_size)
-    
-    # Convert to array
     img_array = np.array(img)
-    
-    # Ensure RGB
-    if len(img_array.shape) == 2:  # Grayscale
+
+    # Konversi ke RGB jika diperlukan
+    if len(img_array.shape) == 2:
         img_array = cv2.cvtColor(img_array, cv2.COLOR_GRAY2RGB)
-    elif img_array.shape[2] == 4:  # RGBA
+    elif img_array.shape[2] == 4:
         img_array = cv2.cvtColor(img_array, cv2.COLOR_RGBA2RGB)
-    
-    # Normalize
+
+    # Normalisasi
     img_array = img_array / 255.0
-    
-    # Add batch dimension
     img_array = np.expand_dims(img_array, axis=0)
-    
     return img_array
 
 # ==================== PREDIKSI ====================
 def predict_image(model, image, class_labels):
-    """Melakukan prediksi pada gambar"""
-    # Preprocess
+    """Melakukan prediksi terhadap gambar yang diupload."""
     processed_img = preprocess_image(image)
-    
-    # Predict
     predictions = model.predict(processed_img, verbose=0)
     predicted_class_idx = np.argmax(predictions[0])
     confidence = predictions[0][predicted_class_idx]
-    
-    # Get class name
     predicted_class = class_labels[str(predicted_class_idx)]
-    
-    # Get all probabilities
+
     all_probs = {class_labels[str(i)]: float(predictions[0][i]) 
                  for i in range(len(class_labels))}
-    
     return predicted_class, confidence, all_probs
 
 # ==================== VISUALISASI ====================
 def plot_probabilities(probabilities):
-    """Plot probability distribution menggunakan Plotly"""
-    # Sort probabilities
+    """Menampilkan distribusi probabilitas dalam bentuk grafik batang."""
     sorted_probs = dict(sorted(probabilities.items(), 
                                key=lambda x: x[1], 
                                reverse=True))
-    
     classes = list(sorted_probs.keys())
     probs = list(sorted_probs.values())
-    
-    # Create bar chart
+
     fig = go.Figure(data=[
         go.Bar(
             x=probs,
@@ -117,55 +99,48 @@ def plot_probabilities(probabilities):
                 color=probs,
                 colorscale='Viridis',
                 showscale=True,
-                colorbar=dict(title="Probability")
+                colorbar=dict(title="Probabilitas")
             ),
             text=[f'{p:.2%}' for p in probs],
             textposition='auto',
         )
     ])
-    
     fig.update_layout(
-        title='Prediction Probabilities',
-        xaxis_title='Probability',
-        yaxis_title='Class',
+        title='Distribusi Probabilitas Prediksi',
+        xaxis_title='Probabilitas',
+        yaxis_title='Kelas',
         height=400,
         template='plotly_white'
     )
-    
     return fig
 
 # ==================== MAIN APP ====================
 def main():
-    # Header
-    st.title("🖼️ CNN Image Classifier")
+    st.title("Optimized CNN Image Classifier - Group 5 - Artificial Intelligence")
     st.markdown("---")
-    
+
     # Load model
-    with st.spinner("Loading model..."):
+    with st.spinner("Memuat model..."):
         model, class_labels = load_model()
-    
+
     if model is None:
-        st.error("❌ Failed to load model. Please check if model file exists.")
+        st.error("Model tidak dapat dimuat. Pastikan file model tersedia.")
         return
-    
-    st.success(f"✅ Model loaded successfully! ({len(class_labels)} classes)")
-    
+
+    st.success("Model berhasil dimuat.")
+
     # Sidebar
     with st.sidebar:
-        st.header("📋 Informasi")
+        st.header("Informasi Model")
         st.info(f"""
-        **Model:** Optimized CNN dengan Transfer Learning
-        
-        **Jumlah Kelas:** {len(class_labels)}
-        
-        **Kelas yang tersedia:**
-        {', '.join(class_labels.values())}
+        Model: CNN yang dioptimalkan dengan transfer learning  
+        Jumlah kelas: {len(class_labels)}  
+        Kelas yang tersedia: {', '.join(class_labels.values())}
         """)
-        
         st.markdown("---")
-        
-        st.header("⚙️ Settings")
-        show_probabilities = st.checkbox("Tampilkan Semua Probabilitas", value=True)
+
+        st.header("Pengaturan")
+        show_probabilities = st.checkbox("Tampilkan semua probabilitas", value=True)
         confidence_threshold = st.slider(
             "Confidence Threshold",
             min_value=0.0,
@@ -173,97 +148,72 @@ def main():
             value=0.5,
             step=0.05
         )
-    
+
     # Main content
     col1, col2 = st.columns([1, 1])
-    
+
     with col1:
-        st.header("📤 Upload Gambar")
-        
+        st.header("Upload Gambar Anda")
+
         uploaded_file = st.file_uploader(
-            "Pilih gambar...",
+            "Pilih gambar untuk diklasifikasikan:",
             type=['jpg', 'jpeg', 'png', 'bmp'],
-            help="Upload gambar dalam format JPG, JPEG, PNG, atau BMP"
+            help="Format yang didukung: JPG, JPEG, PNG, BMP."
         )
-        
+
         if uploaded_file is not None:
-            # Load image
             image = Image.open(uploaded_file)
-            
-            # Display original image
-            st.image(image, caption='Gambar Original', use_container_width=True)
-            
-            # Predict button
-            if st.button("🔍 Prediksi", key="predict_btn"):
-                with st.spinner("Memproses prediksi..."):
-                    # Predict
-                    predicted_class, confidence, all_probs = predict_image(
-                        model, image, class_labels
-                    )
-                    
-                    # Store in session state
+            st.image(image, caption='Gambar yang diupload', use_container_width=True)
+
+            if st.button("Prediksi", key="predict_btn"):
+                with st.spinner("Memproses gambar..."):
+                    predicted_class, confidence, all_probs = predict_image(model, image, class_labels)
                     st.session_state['predicted_class'] = predicted_class
                     st.session_state['confidence'] = confidence
                     st.session_state['all_probs'] = all_probs
-    
+
     with col2:
-        st.header("📊 Hasil Prediksi")
-        
+        st.header("Hasil Prediksi")
+
         if 'predicted_class' in st.session_state:
             predicted_class = st.session_state['predicted_class']
             confidence = st.session_state['confidence']
             all_probs = st.session_state['all_probs']
-            
-            # Display result
+
             if confidence >= confidence_threshold:
-                st.success(f"### ✅ Prediksi: **{predicted_class}**")
+                st.success(f"Hasil Prediksi: {predicted_class}")
             else:
-                st.warning(f"### ⚠️ Prediksi: **{predicted_class}** (Low Confidence)")
-            
-            # Confidence meter
+                st.warning(f"Hasil Prediksi: {predicted_class} (Tingkat kepercayaan rendah)")
+
             st.metric(
                 label="Confidence Score",
                 value=f"{confidence:.2%}",
-                delta=f"{confidence - confidence_threshold:.2%} dari threshold"
+                delta=f"{confidence - confidence_threshold:.2%} dari batas minimal"
             )
-            
-            # Progress bar
+
             st.progress(float(confidence))
-            
-            # Show all probabilities
+
             if show_probabilities:
                 st.markdown("---")
-                st.subheader("📈 Distribution Probabilitas")
+                st.subheader("Distribusi Probabilitas")
                 fig = plot_probabilities(all_probs)
                 st.plotly_chart(fig, use_container_width=True)
-                
-                # Detailed table
-                with st.expander("📋 Lihat Detail Probabilitas"):
+
+                with st.expander("Detail Probabilitas"):
                     sorted_probs = dict(sorted(all_probs.items(), 
                                               key=lambda x: x[1], 
                                               reverse=True))
                     for cls, prob in sorted_probs.items():
-                        st.write(f"**{cls}:** {prob:.4f} ({prob*100:.2f}%)")
+                        st.write(f"{cls}: {prob:.4f} ({prob*100:.2f}%)")
         else:
-            st.info("👆 Upload gambar dan klik tombol Prediksi untuk melihat hasil")
-            
-            # Example images
+            st.info("upload gambar dan klik tombol 'Prediksi' untuk melihat hasil.")
             st.markdown("---")
-            st.subheader("💡 Tips:")
+            st.subheader("Tips:")
             st.markdown("""
-            - Gunakan gambar dengan kualitas baik
-            - Pastikan objek terlihat jelas
-            - Hindari gambar yang terlalu gelap atau blur
-            - Ukuran file maksimal 200MB
+            - Gunakan gambar dengan kualitas baik dan objek yang jelas terlihat.  
+            - Hindari gambar yang terlalu gelap, blur, atau memiliki noise tinggi.  
+            - Ukuran file maksimal 200 MB.
             """)
-    
-    # Footer
-    st.markdown("---")
-    st.markdown("""
-    <div style='text-align: center; color: gray; padding: 20px;'>
-        <p>🚀 Powered by TensorFlow & Streamlit | Made with ❤️</p>
-    </div>
-    """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()

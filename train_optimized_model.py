@@ -13,13 +13,13 @@ BATCH_SIZE = 32
 EPOCHS = 50
 LEARNING_RATE = 0.001
 
-# Path dataset (sesuaikan dengan struktur folder Anda)
+# Path dataset
 TRAIN_DIR = 'dataset/train'
 VAL_DIR = 'dataset/validation'
 TEST_DIR = 'dataset/test'
 
 # ==================== DATA AUGMENTATION ====================
-print("📊 Mempersiapkan Data Augmentation...")
+print(" Mempersiapkan Data Augmentation...")
 
 train_datagen = ImageDataGenerator(
     rescale=1./255,
@@ -57,11 +57,11 @@ test_generator = val_test_datagen.flow_from_directory(
 )
 
 num_classes = len(train_generator.class_indices)
-print(f"✅ Jumlah kelas: {num_classes}")
-print(f"📁 Kelas: {train_generator.class_indices}")
+print(f" Jumlah kelas: {num_classes}")
+print(f" Kelas: {train_generator.class_indices}")
 
 # ==================== MODEL DENGAN TRANSFER LEARNING ====================
-print("\n🏗️ Membangun Model dengan Transfer Learning (MobileNetV2)...")
+print("\nMembangun Model dengan Transfer Learning (MobileNetV2)...")
 
 def create_optimized_model(num_classes, img_size=224):
     """
@@ -105,7 +105,7 @@ model, base_model = create_optimized_model(num_classes, IMG_SIZE)
 model.summary()
 
 # ==================== COMPILE MODEL ====================
-print("\n⚙️ Kompilasi Model...")
+print("\n Kompilasi Model...")
 
 model.compile(
     optimizer=keras.optimizers.Adam(learning_rate=LEARNING_RATE),
@@ -142,7 +142,7 @@ callbacks = [
 ]
 
 # ==================== TRAINING PHASE 1: FROZEN BASE ====================
-print("\n🎯 FASE 1: Training dengan Base Model Frozen...")
+print("\n FASE 1: Training dengan Base Model Frozen...")
 
 history = model.fit(
     train_generator,
@@ -153,7 +153,7 @@ history = model.fit(
 )
 
 # ==================== FINE-TUNING ====================
-print("\n🔧 FASE 2: Fine-tuning (Unfreeze beberapa layers)...")
+print("\n FASE 2: Fine-tuning (Unfreeze beberapa layers)...")
 
 # Unfreeze top layers dari base model
 base_model.trainable = True
@@ -180,13 +180,13 @@ history_fine = model.fit(
 )
 
 # ==================== EVALUASI FINAL ====================
-print("\n📊 Evaluasi Model pada Test Set...")
+print("\n Evaluasi Model pada Test Set...")
 
 test_loss, test_acc, test_precision, test_recall = model.evaluate(test_generator)
 f1_score = 2 * (test_precision * test_recall) / (test_precision + test_recall + 1e-7)
 
 print(f"\n{'='*50}")
-print(f"📈 HASIL EVALUASI FINAL:")
+print(f" HASIL EVALUASI FINAL:")
 print(f"{'='*50}")
 print(f"Test Accuracy:  {test_acc:.4f} ({test_acc*100:.2f}%)")
 print(f"Test Precision: {test_precision:.4f}")
@@ -196,14 +196,14 @@ print(f"{'='*50}\n")
 
 # ==================== SAVE MODEL ====================
 model.save('optimized_cnn_model.h5')
-print("💾 Model disimpan sebagai 'optimized_cnn_model.h5'")
+print(" Model disimpan sebagai 'optimized_cnn_model.h5'")
 
 # Save class labels
 import json
 class_labels = {v: k for k, v in train_generator.class_indices.items()}
 with open('class_labels.json', 'w') as f:
     json.dump(class_labels, f)
-print("💾 Class labels disimpan sebagai 'class_labels.json'")
+print(" Class labels disimpan sebagai 'class_labels.json'")
 
 # ==================== PLOT TRAINING HISTORY ====================
 def plot_history(history, history_fine=None):
@@ -244,9 +244,9 @@ def plot_history(history, history_fine=None):
     
     plt.tight_layout()
     plt.savefig('training_history.png', dpi=300, bbox_inches='tight')
-    print("📊 Plot training history disimpan sebagai 'training_history.png'")
+    print(" Plot training history disimpan sebagai 'training_history.png'")
     plt.show()
 
 plot_history(history, history_fine)
 
-print("\n✅ Training selesai!")
+print("\n Training selesai!")
